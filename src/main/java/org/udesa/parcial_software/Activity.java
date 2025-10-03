@@ -46,6 +46,10 @@ public final class Activity {
                 .orElseThrow(() -> new IllegalArgumentException("No such ticket"));
     }
 
+    public List<Ticket> soldTickets() {
+        return Collections.unmodifiableList(soldTickets);
+    }
+
     public String name() { return name; }
     public int remaining() { return remaining; }
     public List<Integer> seatNumbers() { return Collections.unmodifiableList(seatNumbers); }
