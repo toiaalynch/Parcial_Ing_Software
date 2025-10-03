@@ -5,9 +5,20 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ActivityTest {
+    @Test
+    void test00createActivityHasRemainingEqualToCapacity() {
+        Activity a = new Activity("Talk", 2, List.of(1,2));
+        assertEquals(2, a.remaining());
+    }
+    @Test
+    void test01sellReducesRemainingByOne() {
+        Activity a = new Activity("Talk", 2, List.of(1,2));
+        a.sellTo(new Wristband("W1"), 1);
+        assertEquals(1, a.remaining());
+    }
 
     @Test
-    void test01cannotSellSameSeatTwice_inSameActivity() {
+    void test02cannotSellSameSeatTwice_inSameActivity() {
         Activity a = new Activity("Talk", 2, List.of(1,2));
 
         a.sellTo(new Wristband("W1"), 1);
@@ -17,7 +28,7 @@ public class ActivityTest {
     }
 
     @Test
-    void test02cannotSellMoreThanCapacity() {
+    void test03cannotSellMoreThanCapacity() {
         Activity a = new Activity("Workshop", 1, List.of(10));
 
         a.sellTo(new Wristband("W1"), 10);
@@ -27,29 +38,18 @@ public class ActivityTest {
     }
 
     @Test
-    void test03thirdSoldSeatGetsThePrize() {
+    void test04thirdAccessGetsThePrize() {
         Activity a = new Activity("Keynote", 5, List.of(1,2,3,4,5));
 
         a.sellTo(new Wristband("W1"), 1);
         a.sellTo(new Wristband("W2"), 2);
+        a.sellTo(new Wristband("W3"), 3);
 
-        assertTrue(a.sellTo(new Wristband("W3"), 3).hasPrize());
-        assertFalse(a.sellTo(new Wristband("W4"), 4).hasPrize());
-    }
+        a.access(new Wristband("W1"), 1);
+        a.access(new Wristband("W2"), 2);
+        a.access(new Wristband("W3"), 3); // 3er acceso
 
-    @Test
-    void test04onlyThirdTicketGetsPrize() {
-        Activity a = new Activity("Panel", 5, List.of(1,2,3,4,5));
-
-        a.sellTo(new Wristband("W1"), 1); // 1st
-        a.sellTo(new Wristband("W2"), 2); // 2nd
-        Ticket t3 = a.sellTo(new Wristband("W3"), 3); // 3rd → prize
-        Ticket t4 = a.sellTo(new Wristband("W4"), 4); // 4th → no prize
-        Ticket t5 = a.sellTo(new Wristband("W5"), 5); // 5th → no prize
-
-        assertTrue(t3.hasPrize());
-        assertFalse(t4.hasPrize());
-        assertFalse(t5.hasPrize());
+        assertTrue(a.findTicket(new Wristband("W3"), 3).hasPrize());
     }
 
     @Test
@@ -79,6 +79,20 @@ public class ActivityTest {
 
         assertThrows(UnsupportedOperationException.class,
                 () -> a.seatNumbers().add(99));
+    }
+
+    @Test
+    void test08cannotSellSeatNotInNumberedList() {
+        Activity a = new Activity("Talk", 2, List.of(1,2));
+
+        // Intentar vender asiento inexistente (99) debe fallar
+        assertThrows(IllegalArgumentException.class,
+                () -> a.sellTo(new Wristband("W1"), 99));
+    }
+    @Test
+    void test09capacityMustMatchSeatNumbersSize() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Activity("BadActivity", 3, List.of(1,2)));
     }
 
 

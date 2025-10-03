@@ -1,10 +1,12 @@
+// src/main/java/org/udesa/parcial_software/Ticket.java
 package org.udesa.parcial_software;
 
-/** Boleto que vincula pulsera y número de asiento. */
 public final class Ticket {
     private final Wristband owner;
     private final int seatNumber;
-    private boolean consumed = false;
+    private boolean prize = false;
+
+    private Consumption state = new Fresh();
 
     public Ticket(Wristband owner, int seatNumber) {
         this.owner = owner;
@@ -13,18 +15,19 @@ public final class Ticket {
 
     public Wristband owner() { return owner; }
     public int seatNumber() { return seatNumber; }
-    private boolean prize = false;
 
     public boolean hasPrize() { return prize; }
-
-    /** Marca este ticket como ganador de premio. */
     void assignPrize() { this.prize = true; }
 
-    /** Marca el ticket como consumido. Lanza excepción si ya lo estaba. */
-    public void consume() {
-        if (consumed) {
-            throw new IllegalStateException("Ticket already consumed: seat " + seatNumber);
+    public void consume() { state = state.consume(this); }
+
+    private static abstract class Consumption { abstract Consumption consume(Ticket t); }
+    private static final class Fresh extends Consumption {
+        @Override Consumption consume(Ticket t) { return new Used(); }
+    }
+    private static final class Used extends Consumption {
+        @Override Consumption consume(Ticket t) {
+            throw new IllegalStateException("Ticket already consumed: seat " + t.seatNumber());
         }
-        consumed = true;
     }
 }
